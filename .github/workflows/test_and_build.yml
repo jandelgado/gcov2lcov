@@ -48,5 +48,21 @@ jobs:
     - name: upload artifacts
       uses: actions/upload-artifact@master
       with:
-        name: binaries
+        name: bin
         path: bin/
+
+  inttest:
+    name: End-to-end integration test
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v1
+    - name: Download binary from build stage
+      uses: actions/download-artifact@v1
+      with:
+        name: bin
+    - name: Run test
+      run: |
+        chmod 755 bin/gcov2lcov
+        make inttest
