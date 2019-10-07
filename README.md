@@ -1,5 +1,8 @@
 # gcov2lcov
 
+[![Build Status](https://github.com/jandelgado/gcov2lcov/workflows/run%20tests/badge.svg)](https://github.com/jandelgado/gcov2lcov/actions?workflow=run%20tests)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jandelgado/gcov2lcov)](https://goreportcard.com/report/github.com/jandelgado/gcov2lcov)
+
 Convert golang test coverage to lcov format (which can for example be uploaded
 to coveralls).
 
