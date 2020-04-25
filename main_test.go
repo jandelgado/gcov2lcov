@@ -3,11 +3,21 @@
 package main
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestKeysOfMapReturnsAllKeysOfMap(t *testing.T) {
+	m := map[int]int{1: 10, 10: 100}
+
+	keys := keysOfMap(m)
+	assert.Contains(t, keys, 1)
+	assert.Contains(t, keys, 10)
+	assert.Equal(t, 2, len(keys))
+}
 
 func TestParseCoverageLineFailsOnInvalidLines(t *testing.T) {
 	_, _, err := parseCoverageLine("main.go")
@@ -39,14 +49,15 @@ func TestParseCoverageLineOfParsesValidLineCorrectly(t *testing.T) {
 
 func TestParseCoverage(t *testing.T) {
 
-	// note: in this integrative test the package path must match the actual
+	// note: in this integrative test, the package path must match the actual
 	// repository name of this project.
 	cov := `mode: set
 github.com/jandelgado/gcov2lcov/main.go:6.14,8.3 2 1`
 
 	reader := strings.NewReader(cov)
-	res := parseCoverage(reader)
+	res, err := parseCoverage(reader)
 
+	assert.NoError(t, err)
 	assert.Equal(t, 1, len(res))
 	for k, blks := range res {
 		assert.Equal(t, 1, len(blks))
@@ -59,4 +70,32 @@ github.com/jandelgado/gcov2lcov/main.go:6.14,8.3 2 1`
 		assert.Equal(t, 2, b.statements)
 		assert.Equal(t, 1, b.covered)
 	}
+}
+
+func TestConvertCoverage(t *testing.T) {
+	// note: in this integrative test, the package path must match the actual
+	// repository name of this project. Format:
+	//   name.go:line.column,line.column numberOfStatements count
+	cov := `mode: set
+github.com/jandelgado/gcov2lcov/main.go:6.14,8.3 2 1
+github.com/jandelgado/gcov2lcov/main.go:7.14,9.3 2 0
+github.com/jandelgado/gcov2lcov/main.go:10.1,11.10 2 2`
+
+	in := strings.NewReader(cov)
+	out := bytes.NewBufferString("")
+	err := convertCoverage(in, out)
+
+	expected := `TN:
+SF:main.go
+DA:6,1
+DA:7,1
+DA:8,1
+DA:10,2
+DA:11,2
+LF:5
+LH:7
+end_of_record
+`
+	assert.NoError(t, err)
+	assert.Equal(t, expected, out.String())
 }

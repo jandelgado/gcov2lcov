@@ -1,3 +1,4 @@
 mode: set
 github.com/jandelgado/gcov2lcov/main.go:45.44,49.38 4 1
+github.com/jandelgado/gcov2lcov/main.go:46.44,50.38 4 0
 github.com/jandelgado/gcov2lcov/main.go:58.2,58.32 1 1
