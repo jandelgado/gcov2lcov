@@ -15,6 +15,12 @@ for a github action which uses this tool.
 This tool is based on [covfmt](https://github.com/ricallinson/covfmt) and
 uses some parts of [goveralls](https://github.com/mattn/goveralls).
 
+## Installation
+
+```
+$ go get -u github.com/jandelgado/gcov2lcov
+```
+
 ## Usage
 
 ```
