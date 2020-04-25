@@ -8,7 +8,7 @@ test:
 	go test ./... -coverprofile coverage.out
 	go tool cover -func coverage.out
 
-inttest: 
+inttest: build
 	./bin/gcov2lcov -infile testdata/coverage.out -outfile coverage.lcov
-	diff testdata/coverage_expected.lcov coverage.lcov
+	diff -y testdata/coverage_expected.lcov coverage.lcov
 

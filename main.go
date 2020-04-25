@@ -112,7 +112,6 @@ func writeLcovRecord(filePath string, blocks []*block, w io.StringWriter) error 
 	// Loop over functions
 	// FNDA: stats,name ?
 
-	// Loop over lines
 	total := 0
 	covered := 0
 
@@ -123,9 +122,6 @@ func writeLcovRecord(filePath string, blocks []*block, w io.StringWriter) error 
 	for _, b := range blocks {
 		// For each line in a block we add an lcov entry and count the lines.
 		for i := b.startLine; i <= b.endLine; i++ {
-			if b.covered < 1 {
-				continue
-			}
 			coverMap[i] += b.covered
 		}
 	}
@@ -135,9 +131,13 @@ func writeLcovRecord(filePath string, blocks []*block, w io.StringWriter) error 
 	for _, line := range lines {
 		err = writer(err, "DA:"+strconv.Itoa(line)+","+strconv.Itoa(coverMap[line])+"\n")
 		total++
-		covered += coverMap[line]
+		if coverMap[line] > 0 {
+			covered++
+		}
 	}
 
+	// LH:<number of lines with a non-zero execution count>
+	// LF:<number of instrumented lines>
 	err = writer(err, "LF:"+strconv.Itoa(total)+"\n")
 	err = writer(err, "LH:"+strconv.Itoa(covered)+"\n")
 

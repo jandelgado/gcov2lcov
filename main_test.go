@@ -90,10 +90,11 @@ SF:main.go
 DA:6,1
 DA:7,1
 DA:8,1
+DA:9,0
 DA:10,2
 DA:11,2
-LF:5
-LH:7
+LF:6
+LH:5
 end_of_record
 `
 	assert.NoError(t, err)
