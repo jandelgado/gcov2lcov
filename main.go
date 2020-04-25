@@ -18,6 +18,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -80,6 +81,16 @@ func getCoverallsSourceFileName(name string) string {
 	return name
 }
 
+func keysOfMap(m map[int]int) []int {
+	keys := make([]int, len(m))
+	i := 0
+	for k := range m {
+		keys[i] = k
+		i++
+	}
+	return keys
+}
+
 func writeLcovRecord(filePath string, blocks []*block, w io.StringWriter) error {
 
 	writer := func(err error, s string) error {
@@ -105,16 +116,26 @@ func writeLcovRecord(filePath string, blocks []*block, w io.StringWriter) error 
 	total := 0
 	covered := 0
 
+	// maps line number to sum of covered
+	coverMap := map[int]int{}
+
 	// Loop over each block and extract the lcov data needed.
 	for _, b := range blocks {
 		// For each line in a block we add an lcov entry and count the lines.
 		for i := b.startLine; i <= b.endLine; i++ {
-			total++
-			if b.covered > 0 {
-				covered++
+			if b.covered < 1 {
+				continue
 			}
-			err = writer(err, "DA:"+strconv.Itoa(i)+","+strconv.Itoa(b.covered)+"\n")
+			coverMap[i] += b.covered
 		}
+	}
+
+	lines := keysOfMap(coverMap)
+	sort.Ints(lines)
+	for _, line := range lines {
+		err = writer(err, "DA:"+strconv.Itoa(line)+","+strconv.Itoa(coverMap[line])+"\n")
+		total++
+		covered += coverMap[line]
 	}
 
 	err = writer(err, "LF:"+strconv.Itoa(total)+"\n")
@@ -178,7 +199,7 @@ func parseCoverageLine(line string) (string, *block, error) {
 	return path[0], b, err
 }
 
-func parseCoverage(coverage io.Reader) map[string][]*block {
+func parseCoverage(coverage io.Reader) (map[string][]*block, error) {
 	scanner := bufio.NewScanner(coverage)
 	blocks := map[string][]*block{}
 	for scanner.Scan() {
@@ -189,7 +210,7 @@ func parseCoverage(coverage io.Reader) map[string][]*block {
 		if f, b, err := parseCoverageLine(line); err == nil {
 			f, err := findFile(f)
 			if err != nil {
-				log.Printf("%v", err)
+				log.Printf("warn: %v", err)
 				continue
 			}
 			f = getCoverallsSourceFileName(f)
@@ -199,14 +220,22 @@ func parseCoverage(coverage io.Reader) map[string][]*block {
 			}
 			blocks[f] = append(blocks[f], b)
 		} else {
-			log.Printf("%v", err)
+			log.Printf("warn: %v", err)
 		}
 
 	}
 	if err := scanner.Err(); err != nil {
-		log.Fatal(scanner.Err())
+		return nil, err
 	}
-	return blocks
+	return blocks, nil
+}
+
+func convertCoverage(in io.Reader, out io.Writer) error {
+	blocks, err := parseCoverage(in)
+	if err != nil {
+		return err
+	}
+	return writeLcov(blocks, out)
 }
 
 func main() {
@@ -236,8 +265,8 @@ func main() {
 		defer outfile.Close()
 	}
 
-	err = writeLcov(parseCoverage(infile), outfile)
+	err = convertCoverage(infile, outfile)
 	if err != nil {
-		log.Fatalf("error writing lcov output: %v", err)
+		log.Fatalf("convert: %v", err)
 	}
 }
