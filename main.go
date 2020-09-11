@@ -239,7 +239,7 @@ func convertCoverage(in io.Reader, out io.Writer) error {
 }
 
 func main() {
-	os.Exit(gcovmain());
+	os.Exit(gcovmain())
 }
 
 func gcovmain() int {
