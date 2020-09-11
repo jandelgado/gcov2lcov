@@ -239,12 +239,16 @@ func convertCoverage(in io.Reader, out io.Writer) error {
 }
 
 func main() {
+	os.Exit(gcovmain());
+}
+
+func gcovmain() int {
 	infileName := flag.String("infile", "", "go coverage file to read, default: <stdin>")
 	outfileName := flag.String("outfile", "", "lcov file to write, default: <stdout>")
 	flag.Parse()
 	if len(flag.Args()) > 0 {
 		flag.Usage()
-		os.Exit(1)
+		return 1
 	}
 
 	infile := os.Stdin
@@ -253,20 +257,24 @@ func main() {
 	if *infileName != "" {
 		infile, err = os.Open(*infileName)
 		if err != nil {
-			log.Fatalf("error opening input file: %v", err)
+			log.Printf("error opening input file: %v\n", err)
+			return 2
 		}
 		defer infile.Close()
 	}
 	if *outfileName != "" {
 		outfile, err = os.Create(*outfileName)
 		if err != nil {
-			log.Fatalf("error opening output file: %v", err)
+			log.Printf("error opening output file: %v\n", err)
+			return 3
 		}
 		defer outfile.Close()
 	}
 
 	err = convertCoverage(infile, outfile)
 	if err != nil {
-		log.Fatalf("convert: %v", err)
+		log.Printf("error: convert: %v", err)
+		return 4
 	}
+	return 0
 }
