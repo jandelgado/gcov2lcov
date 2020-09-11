@@ -43,18 +43,18 @@ var pkgCache = map[string]cacheEntry{}
 
 // given a module+file spec (e.g. github.com/jandelgado/gcov2lcov/main.go),
 // strip of the module name and return the file name (e.g. main.go).
-func findFile(file string) (string, error) {
-	dir, file := filepath.Split(file)
+func findFile(filePath string) (string, error) {
+	dir, file := filepath.Split(filePath)
 	var result cacheEntry
 	var ok bool
-	if result, ok = pkgCache[file]; !ok {
+	if result, ok = pkgCache[filePath]; !ok {
 		pkg, err := build.Import(dir, ".", build.FindOnly)
 		if err == nil {
 			result = cacheEntry{filepath.Join(pkg.Dir, file), nil}
 		} else {
 			result = cacheEntry{"", err}
 		}
-		pkgCache[file] = result
+		pkgCache[filePath] = result
 	}
 	return result.file, result.err
 }
