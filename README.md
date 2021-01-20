@@ -35,7 +35,7 @@ Usage of ./gcov2lcov:
 
 ```sh
 $ go test -coverprofile=coverage.out && \
-gcov2lcov -inputfile=coverage.out -outfile=coverage.lcov
+gcov2lcov -infile=coverage.out -outfile=coverage.lcov
 ```
 
 ## Build and Test
