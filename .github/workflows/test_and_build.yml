@@ -1,4 +1,11 @@
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
 name: test and build
 jobs:
   lint:
@@ -7,12 +14,13 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v1
       with:
-        go-version: 1.13.x
+        go-version: 1.16.x
     - name: Checkout code
-      uses: actions/checkout@v1
-    - name: Install golangci-lint
-      run: |
-        go get github.com/golangci/golangci-lint/cmd/golangci-lint
+      uses: actions/checkout@v2
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v2
+      with:
+          version: v1.39.0
     - name: Run linters
       run: |
         export PATH=$PATH:$(go env GOPATH)/bin
@@ -25,9 +33,9 @@ jobs:
       if: success()
       uses: actions/setup-go@v1
       with:
-        go-version: 1.15.x
+        go-version: 1.16.x
     - name: Checkout code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     - name: Run tests
       run: make test
     - name: Convert coverage to lcov
@@ -48,9 +56,9 @@ jobs:
     - name: Install Go
       uses: actions/setup-go@v1
       with:
-        go-version: 1.15.x
+        go-version: 1.16.x
     - name: Checkout code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     - name: build
       run: |
         export GO111MODULE=on
@@ -67,11 +75,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v1
-    - name: Download binary from build stage
+      uses: actions/checkout@v2
+    - name: Download binaries from build stage
       uses: actions/download-artifact@v1
       with:
         name: bin
     - name: Run test
       run: |
+        chmod 755 bin/*
         make inttest
