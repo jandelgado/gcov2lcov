@@ -73,6 +73,10 @@ func findRepositoryRoot(dir string) (string, bool) {
 	return findRepositoryRoot(nextdir)
 }
 
+func getSourceFileName(name string) string {
+	return name
+}
+
 func getCoverallsSourceFileName(name string) string {
 	if dir, ok := findRepositoryRoot(name); ok {
 		filename := strings.TrimPrefix(name, dir+string(os.PathSeparator))
@@ -199,7 +203,7 @@ func parseCoverageLine(line string) (string, *block, error) {
 	return path[0], b, err
 }
 
-func parseCoverage(coverage io.Reader) (map[string][]*block, error) {
+func parseCoverage(coverage io.Reader, pathResolverFunc func(string) string) (map[string][]*block, error) {
 	scanner := bufio.NewScanner(coverage)
 	blocks := map[string][]*block{}
 	for scanner.Scan() {
@@ -213,7 +217,9 @@ func parseCoverage(coverage io.Reader) (map[string][]*block, error) {
 				log.Printf("warn: %v", err)
 				continue
 			}
-			f = getCoverallsSourceFileName(f)
+
+			f = pathResolverFunc(f)
+
 			// Make sure the filePath is a key in the map.
 			if _, found := blocks[f]; !found {
 				blocks[f] = []*block{}
@@ -230,8 +236,8 @@ func parseCoverage(coverage io.Reader) (map[string][]*block, error) {
 	return blocks, nil
 }
 
-func convertCoverage(in io.Reader, out io.Writer) error {
-	blocks, err := parseCoverage(in)
+func convertCoverage(in io.Reader, out io.Writer, pathResolverFunc func(string) string) error {
+	blocks, err := parseCoverage(in, pathResolverFunc)
 	if err != nil {
 		return err
 	}
@@ -245,6 +251,8 @@ func main() {
 func gcovmain() int {
 	infileName := flag.String("infile", "", "go coverage file to read, default: <stdin>")
 	outfileName := flag.String("outfile", "", "lcov file to write, default: <stdout>")
+	useAbsoluteSourcePath := flag.Bool("use-absolute-source-path", false,
+		"use absolute paths for source file in lcov output, default: false")
 	flag.Parse()
 	if len(flag.Args()) > 0 {
 		flag.Usage()
@@ -271,7 +279,14 @@ func gcovmain() int {
 		defer outfile.Close()
 	}
 
-	err = convertCoverage(infile, outfile)
+	var pathResolverFunc func(string) string
+	if *useAbsoluteSourcePath {
+		pathResolverFunc = getSourceFileName
+	} else {
+		pathResolverFunc = getCoverallsSourceFileName
+	}
+
+	err = convertCoverage(infile, outfile, pathResolverFunc)
 	if err != nil {
 		log.Printf("error: convert: %v", err)
 		return 4

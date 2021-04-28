@@ -29,6 +29,8 @@ Usage of ./gcov2lcov:
     	go coverage file to read, default: <stdin>
   -outfile string
     	lcov file to write, default: <stdout>
+  -use-absolute-source-path
+    	use absolute paths for source file in lcov output, default: false
 ```
 
 ### Example

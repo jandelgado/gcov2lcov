@@ -4,6 +4,7 @@ package main
 
 import (
 	"bytes"
+	"os"
 	"strings"
 	"testing"
 
@@ -55,7 +56,7 @@ func TestParseCoverage(t *testing.T) {
 github.com/jandelgado/gcov2lcov/main.go:6.14,8.3 2 1`
 
 	reader := strings.NewReader(cov)
-	res, err := parseCoverage(reader)
+	res, err := parseCoverage(reader, getCoverallsSourceFileName)
 
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(res))
@@ -83,7 +84,7 @@ github.com/jandelgado/gcov2lcov/main.go:10.1,11.10 2 2`
 
 	in := strings.NewReader(cov)
 	out := bytes.NewBufferString("")
-	err := convertCoverage(in, out)
+	err := convertCoverage(in, out, getCoverallsSourceFileName)
 
 	expected := `TN:
 SF:main.go
@@ -99,4 +100,15 @@ end_of_record
 `
 	assert.NoError(t, err)
 	assert.Equal(t, expected, out.String())
+}
+
+func TestPathResolverFunc(t *testing.T) {
+	pwd, err := os.Getwd()
+	assert.NoError(t, err)
+
+	name := getCoverallsSourceFileName(pwd + "/main.go")
+	assert.Equal(t, "main.go", name)
+
+	name = getSourceFileName(pwd + "/main.go")
+	assert.Equal(t, pwd+"/main.go", name)
 }
