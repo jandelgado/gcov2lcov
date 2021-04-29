@@ -2,9 +2,9 @@
 .PHONY: build test inttest clean
 
 build:
-	GOOS=linux GOARCH=amd64 go build -o bin/gcov2lcov-linux-amd64 .
-	GOOS=windows GOARCH=amd64 go build -o bin/gcov2lcov-win-amd64 .
-	GOOS=darwin GOARCH=amd64 go build -o bin/gcov2lcov-darwin-amd64 .
+	GOOS=linux GOARCH=amd64 go build -o bin/gcov2lcov-linux-amd64 ./cmd
+	GOOS=windows GOARCH=amd64 go build -o bin/gcov2lcov-win-amd64 ./cmd
+	GOOS=darwin GOARCH=amd64 go build -o bin/gcov2lcov-darwin-amd64 ./cmd
 
 test:
 	go test ./... -coverprofile coverage.out
