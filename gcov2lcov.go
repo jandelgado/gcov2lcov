@@ -7,12 +7,11 @@
 // This tool is based on covfmt (https://github.com/ricallinson/covfmt) and
 // uses some parts of goveralls (https://github.com/mattn/goveralls).
 //
-package main
+package gcov2lcov
 
 import (
 	"bufio"
 	"errors"
-	"flag"
 	"go/build"
 	"io"
 	"log"
@@ -40,6 +39,33 @@ type cacheEntry struct {
 }
 
 var pkgCache = map[string]cacheEntry{}
+
+type PathResolver func(name string) (string, error)
+
+func ConvertCoverage(in io.Reader, out io.Writer, pathResolverFunc PathResolver) error {
+	blocks, err := parseCoverage(in, pathResolverFunc)
+	if err != nil {
+		return err
+	}
+	return writeLcov(blocks, out)
+}
+
+func AbsolutePathResolver(name string) (string, error) {
+	return name, nil
+}
+
+func RelativePathResolver(name string) (string, error) {
+	name, err := findFile(name)
+	if err != nil {
+		return "", err
+	}
+
+	if dir, ok := findRepositoryRoot(name); ok {
+		filename := strings.TrimPrefix(name, dir+string(os.PathSeparator))
+		return filename, nil
+	}
+	return name, nil
+}
 
 // given a module+file spec (e.g. github.com/jandelgado/gcov2lcov/main.go),
 // strip of the module name and return the file name (e.g. main.go).
@@ -71,18 +97,6 @@ func findRepositoryRoot(dir string) (string, bool) {
 		return "", false
 	}
 	return findRepositoryRoot(nextdir)
-}
-
-func getSourceFileName(name string) string {
-	return name
-}
-
-func getCoverallsSourceFileName(name string) string {
-	if dir, ok := findRepositoryRoot(name); ok {
-		filename := strings.TrimPrefix(name, dir+string(os.PathSeparator))
-		return filename
-	}
-	return name
 }
 
 func keysOfMap(m map[int]int) []int {
@@ -203,7 +217,7 @@ func parseCoverageLine(line string) (string, *block, error) {
 	return path[0], b, err
 }
 
-func parseCoverage(coverage io.Reader, pathResolverFunc func(string) string) (map[string][]*block, error) {
+func parseCoverage(coverage io.Reader, pathResolverFunc PathResolver) (map[string][]*block, error) {
 	scanner := bufio.NewScanner(coverage)
 	blocks := map[string][]*block{}
 	for scanner.Scan() {
@@ -212,13 +226,11 @@ func parseCoverage(coverage io.Reader, pathResolverFunc func(string) string) (ma
 			continue
 		}
 		if f, b, err := parseCoverageLine(line); err == nil {
-			f, err := findFile(f)
+			f, err = pathResolverFunc(f)
 			if err != nil {
 				log.Printf("warn: %v", err)
 				continue
 			}
-
-			f = pathResolverFunc(f)
 
 			// Make sure the filePath is a key in the map.
 			if _, found := blocks[f]; !found {
@@ -234,62 +246,4 @@ func parseCoverage(coverage io.Reader, pathResolverFunc func(string) string) (ma
 		return nil, err
 	}
 	return blocks, nil
-}
-
-func convertCoverage(in io.Reader, out io.Writer, pathResolverFunc func(string) string) error {
-	blocks, err := parseCoverage(in, pathResolverFunc)
-	if err != nil {
-		return err
-	}
-	return writeLcov(blocks, out)
-}
-
-func main() {
-	os.Exit(gcovmain())
-}
-
-func gcovmain() int {
-	infileName := flag.String("infile", "", "go coverage file to read, default: <stdin>")
-	outfileName := flag.String("outfile", "", "lcov file to write, default: <stdout>")
-	useAbsoluteSourcePath := flag.Bool("use-absolute-source-path", false,
-		"use absolute paths for source file in lcov output, default: false")
-	flag.Parse()
-	if len(flag.Args()) > 0 {
-		flag.Usage()
-		return 1
-	}
-
-	infile := os.Stdin
-	outfile := os.Stdout
-	var err error
-	if *infileName != "" {
-		infile, err = os.Open(*infileName)
-		if err != nil {
-			log.Printf("error opening input file: %v\n", err)
-			return 2
-		}
-		defer infile.Close()
-	}
-	if *outfileName != "" {
-		outfile, err = os.Create(*outfileName)
-		if err != nil {
-			log.Printf("error opening output file: %v\n", err)
-			return 3
-		}
-		defer outfile.Close()
-	}
-
-	var pathResolverFunc func(string) string
-	if *useAbsoluteSourcePath {
-		pathResolverFunc = getSourceFileName
-	} else {
-		pathResolverFunc = getCoverallsSourceFileName
-	}
-
-	err = convertCoverage(infile, outfile, pathResolverFunc)
-	if err != nil {
-		log.Printf("error: convert: %v", err)
-		return 4
-	}
-	return 0
 }
