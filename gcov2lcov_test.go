@@ -3,7 +3,6 @@ package gcov2lcov
 import (
 	"bytes"
 	"github.com/stretchr/testify/assert"
-	"os"
 	"strings"
 	"testing"
 )
@@ -100,12 +99,11 @@ end_of_record
 }
 
 func TestPathResolverFunc(t *testing.T) {
-	pwd, err := os.Getwd()
+	name, err := RelativePathResolver("github.com/jandelgado/gcov2lcov/cmd/main.go")
 	assert.NoError(t, err)
-
-	name := RelativePathResolver(pwd + "/cmd/main.go")
 	assert.Equal(t, "cmd/main.go", name)
 
-	name = AbsolutePathResolver(pwd + "/cmd/main.go")
-	assert.Equal(t, pwd+"/cmd/main.go", name)
+	name, err = AbsolutePathResolver("github.com/jandelgado/gcov2lcov/cmd/main.go")
+	assert.NoError(t, err)
+	assert.Equal(t, "github.com/jandelgado/gcov2lcov/cmd/main.go", name)
 }

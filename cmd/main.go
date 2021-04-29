@@ -51,7 +51,7 @@ func gcovmain() int {
 		defer outfile.Close()
 	}
 
-	var pathResolverFunc func(string) string
+	var pathResolverFunc gcov2lcov.PathResolver
 	if *useAbsoluteSourcePath {
 		pathResolverFunc = gcov2lcov.AbsolutePathResolver
 	} else {

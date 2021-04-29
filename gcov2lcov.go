@@ -40,7 +40,9 @@ type cacheEntry struct {
 
 var pkgCache = map[string]cacheEntry{}
 
-func ConvertCoverage(in io.Reader, out io.Writer, pathResolverFunc func(string) string) error {
+type PathResolver func(name string) (string, error)
+
+func ConvertCoverage(in io.Reader, out io.Writer, pathResolverFunc PathResolver) error {
 	blocks, err := parseCoverage(in, pathResolverFunc)
 	if err != nil {
 		return err
@@ -48,16 +50,21 @@ func ConvertCoverage(in io.Reader, out io.Writer, pathResolverFunc func(string) 
 	return writeLcov(blocks, out)
 }
 
-func AbsolutePathResolver(name string) string {
-	return name
+func AbsolutePathResolver(name string) (string, error) {
+	return name, nil
 }
 
-func RelativePathResolver(name string) string {
+func RelativePathResolver(name string) (string, error) {
+	name, err := findFile(name)
+	if err != nil {
+		return "", err
+	}
+
 	if dir, ok := findRepositoryRoot(name); ok {
 		filename := strings.TrimPrefix(name, dir+string(os.PathSeparator))
-		return filename
+		return filename, nil
 	}
-	return name
+	return name, nil
 }
 
 // given a module+file spec (e.g. github.com/jandelgado/gcov2lcov/main.go),
@@ -210,7 +217,7 @@ func parseCoverageLine(line string) (string, *block, error) {
 	return path[0], b, err
 }
 
-func parseCoverage(coverage io.Reader, pathResolverFunc func(string) string) (map[string][]*block, error) {
+func parseCoverage(coverage io.Reader, pathResolverFunc PathResolver) (map[string][]*block, error) {
 	scanner := bufio.NewScanner(coverage)
 	blocks := map[string][]*block{}
 	for scanner.Scan() {
@@ -219,13 +226,11 @@ func parseCoverage(coverage io.Reader, pathResolverFunc func(string) string) (ma
 			continue
 		}
 		if f, b, err := parseCoverageLine(line); err == nil {
-			f, err := findFile(f)
+			f, err = pathResolverFunc(f)
 			if err != nil {
 				log.Printf("warn: %v", err)
 				continue
 			}
-
-			f = pathResolverFunc(f)
 
 			// Make sure the filePath is a key in the map.
 			if _, found := blocks[f]; !found {
