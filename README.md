@@ -18,7 +18,7 @@ uses some parts of [goveralls](https://github.com/mattn/goveralls).
 ## Installation
 
 ```
-$ go get -u github.com/jandelgado/gcov2lcov
+$ go install github.com/jandelgado/gcov2lcov@latest
 ```
 
 ## Usage
