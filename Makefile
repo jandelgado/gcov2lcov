@@ -1,9 +1,13 @@
 # makefile for gcov2lcov
 .PHONY: build test inttest clean
 
-build:
+build-linux:
 	GOOS=linux GOARCH=amd64 go build -o bin/gcov2lcov-linux-amd64 .
+
+build-windows:
 	GOOS=windows GOARCH=amd64 go build -o bin/gcov2lcov-win-amd64 .
+
+build-darwin:
 	GOOS=darwin GOARCH=amd64 go build -o bin/gcov2lcov-darwin-amd64 .
 
 test:
