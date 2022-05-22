@@ -45,9 +45,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
     - name: Run tests
-      run: make test
+      run: |
+          go version
+          make test
     - name: Build binary for inttest
-      run: GO111MODULE=on make build
+      run: GO111MODULE=on make build-linux
     - name: Integration test
       run: make inttest
 
@@ -63,6 +65,7 @@ jobs:
         uses: actions/checkout@v2
       - name: build
         run: |
+          go version
           export GO111MODULE=on
           make build-linux
           make build-windows

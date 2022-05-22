@@ -1,24 +1,27 @@
 # makefile for gcov2lcov
-.PHONY: build test inttest clean
+.PHONY: phony
 
-build-linux:
+all: build-linux
+
+phony:
+
+build-linux: phony
 	GOOS=linux GOARCH=amd64 go build -o bin/gcov2lcov-linux-amd64 .
 
-build-windows:
+build-windows: phony
 	GOOS=windows GOARCH=amd64 go build -o bin/gcov2lcov-win-amd64 .
 
-build-darwin:
+build-darwin: phony
 	GOOS=darwin GOARCH=amd64 go build -o bin/gcov2lcov-darwin-amd64 .
 
-test:
+test: phony
 	go test ./... -coverprofile coverage.out
 	go tool cover -func coverage.out
 
-inttest:
+inttest: phony
 	./bin/gcov2lcov-linux-amd64 -infile testdata/coverage.out -outfile coverage.lcov
 	diff -y testdata/coverage_expected.lcov coverage.lcov
 
-clean:
+clean: phony
 	rm -f bin/*
-
 
