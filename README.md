@@ -40,6 +40,22 @@ $ go test -coverprofile=coverage.out && \
 gcov2lcov -infile=coverage.out -outfile=coverage.lcov
 ```
 
+### GOROOT
+
+It might be necessary to set the `GOROOT` environment variable properly before calling `gcov2lcov`.
+If you see `cannot find GOROOT directory` warnings like e.g.
+
+```
+022/05/23 16:00:58 warn: go/build: importGo github.com/pashagolub/pgxmock/: exit status 2
+go: cannot find GOROOT directory: /opt/hostedtoolcache/go/1.13.15/x64
+```
+
+Then call `gcov2lcov` with 
+
+```
+$ GOROOT=$(go env GOROOT) gcov2lcov -infile=coverage.out -outfile=coverage.lcov
+```
+
 ## Build and Test
 
 * `make test`  to run tests
