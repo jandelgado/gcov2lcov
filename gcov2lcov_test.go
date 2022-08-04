@@ -1,14 +1,10 @@
-// gcov2lcov - convert golang coverage files to the lcov format.
-// (c) 2019 Jan Delgado
-package main
+package gcov2lcov
 
 import (
 	"bytes"
-	"os"
+	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestKeysOfMapReturnsAllKeysOfMap(t *testing.T) {
@@ -35,11 +31,11 @@ func TestParseCoverageLineFailsOnInvalidLines(t *testing.T) {
 }
 
 func TestParseCoverageLineOfParsesValidLineCorrectly(t *testing.T) {
-	line := "github.com/jandelgado/gcov2lcov/main.go:6.14,8.3 2 1"
+	line := "github.com/jandelgado/gcov2lcov/cmd/main.go:6.14,8.3 2 1"
 	file, b, err := parseCoverageLine(line)
 
 	assert.Nil(t, err)
-	assert.Equal(t, "github.com/jandelgado/gcov2lcov/main.go", file)
+	assert.Equal(t, "github.com/jandelgado/gcov2lcov/cmd/main.go", file)
 	assert.Equal(t, 6, b.startLine)
 	assert.Equal(t, 14, b.startChar)
 	assert.Equal(t, 8, b.endLine)
@@ -53,17 +49,17 @@ func TestParseCoverage(t *testing.T) {
 	// note: in this integrative test, the package path must match the actual
 	// repository name of this project.
 	cov := `mode: set
-github.com/jandelgado/gcov2lcov/main.go:6.14,8.3 2 1`
+github.com/jandelgado/gcov2lcov/cmd/main.go:6.14,8.3 2 1`
 
 	reader := strings.NewReader(cov)
-	res, err := parseCoverage(reader, getCoverallsSourceFileName)
+	res, err := parseCoverage(reader, RelativePathResolver)
 
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(res))
 	for k, blks := range res {
 		assert.Equal(t, 1, len(blks))
 		b := blks[0]
-		assert.Equal(t, "main.go", k)
+		assert.Equal(t, "cmd/main.go", k)
 		assert.Equal(t, 6, b.startLine)
 		assert.Equal(t, 14, b.startChar)
 		assert.Equal(t, 8, b.endLine)
@@ -78,16 +74,16 @@ func TestConvertCoverage(t *testing.T) {
 	// repository name of this project. Format:
 	//   name.go:line.column,line.column numberOfStatements count
 	cov := `mode: set
-github.com/jandelgado/gcov2lcov/main.go:6.14,8.3 2 1
-github.com/jandelgado/gcov2lcov/main.go:7.14,9.3 2 0
-github.com/jandelgado/gcov2lcov/main.go:10.1,11.10 2 2`
+github.com/jandelgado/gcov2lcov/cmd/main.go:6.14,8.3 2 1
+github.com/jandelgado/gcov2lcov/cmd/main.go:7.14,9.3 2 0
+github.com/jandelgado/gcov2lcov/cmd/main.go:10.1,11.10 2 2`
 
 	in := strings.NewReader(cov)
 	out := bytes.NewBufferString("")
-	err := convertCoverage(in, out, getCoverallsSourceFileName)
+	err := ConvertCoverage(in, out, RelativePathResolver)
 
 	expected := `TN:
-SF:main.go
+SF:cmd/main.go
 DA:6,1
 DA:7,1
 DA:8,1
@@ -103,12 +99,11 @@ end_of_record
 }
 
 func TestPathResolverFunc(t *testing.T) {
-	pwd, err := os.Getwd()
+	name, err := RelativePathResolver("github.com/jandelgado/gcov2lcov/cmd/main.go")
 	assert.NoError(t, err)
+	assert.Equal(t, "cmd/main.go", name)
 
-	name := getCoverallsSourceFileName(pwd + "/main.go")
-	assert.Equal(t, "main.go", name)
-
-	name = getSourceFileName(pwd + "/main.go")
-	assert.Equal(t, pwd+"/main.go", name)
+	name, err = AbsolutePathResolver("github.com/jandelgado/gcov2lcov/cmd/main.go")
+	assert.NoError(t, err)
+	assert.Equal(t, "github.com/jandelgado/gcov2lcov/cmd/main.go", name)
 }
