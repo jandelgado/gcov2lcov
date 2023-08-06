@@ -12,15 +12,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Install Go
-      uses: actions/setup-go@v1
+      uses: actions/setup-go@v4
       with:
-        go-version: 1.16.x
+        go-version: 1.20.x
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: golangci-lint
-      uses: golangci/golangci-lint-action@v2
+      uses: golangci/golangci-lint-action@v3
       with:
-          version: v1.39.0
+          version: v1.52.2
     - name: Run linters
       run: |
         export PATH=$PATH:$(go env GOPATH)/bin
@@ -31,11 +31,11 @@ jobs:
     steps:
     - name: Install Go
       if: success()
-      uses: actions/setup-go@v1
+      uses: actions/setup-go@v4
       with:
-        go-version: 1.16.x
+        go-version: 1.20.x
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Run tests
       run: make test
     - name: Convert coverage to lcov
@@ -54,11 +54,11 @@ jobs:
     needs: [lint, test]
     steps:
     - name: Install Go
-      uses: actions/setup-go@v1
+      uses: actions/setup-go@v4
       with:
-        go-version: 1.16.x
+        go-version: 1.20.x
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: build
       run: |
         export GO111MODULE=on
