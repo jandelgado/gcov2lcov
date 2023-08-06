@@ -6,7 +6,6 @@
 // Credits:
 // This tool is based on covfmt (https://github.com/ricallinson/covfmt) and
 // uses some parts of goveralls (https://github.com/mattn/goveralls).
-//
 package main
 
 import (
@@ -166,9 +165,12 @@ func writeLcov(blocks map[string][]*block, f io.Writer) error {
 }
 
 // Format being parsed is:
-//   name.go:line.column,line.column numberOfStatements count
+//
+//	name.go:line.column,line.column numberOfStatements count
+//
 // e.g.
-//   github.com/jandelgado/golang-ci-template/main.go:6.14,8.2 1 1
+//
+//	github.com/jandelgado/golang-ci-template/main.go:6.14,8.2 1 1
 func parseCoverageLine(line string) (string, *block, error) {
 	path := strings.Split(line, ":")
 	if len(path) != 2 {
