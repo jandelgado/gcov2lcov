@@ -34,8 +34,8 @@ type block struct {
 var vscDirs = []string{".git", ".hg", ".bzr", ".svn"}
 
 type cacheEntry struct {
-	file string
-	err  error
+	dir string
+	err error
 }
 
 var pkgCache = map[string]cacheEntry{}
@@ -46,16 +46,16 @@ func findFile(filePath string) (string, error) {
 	dir, file := filepath.Split(filePath)
 	var result cacheEntry
 	var ok bool
-	if result, ok = pkgCache[filePath]; !ok {
+	if result, ok = pkgCache[dir]; !ok {
 		pkg, err := build.Import(dir, ".", build.FindOnly)
 		if err == nil {
-			result = cacheEntry{filepath.Join(pkg.Dir, file), nil}
+			result = cacheEntry{filepath.Join(pkg.Dir), nil}
 		} else {
 			result = cacheEntry{"", err}
 		}
-		pkgCache[filePath] = result
+		pkgCache[dir] = result
 	}
-	return result.file, result.err
+	return filepath.Join(result.dir, file), result.err
 }
 
 // findRepositoryRoot finds the VCS root dir of a given dir
