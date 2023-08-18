@@ -53,7 +53,7 @@ jobs:
     steps:
       - name: Install Go
         if: success()
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.buildversion }}
       - name: Checkout code
@@ -64,7 +64,7 @@ jobs:
           GO111MODULE=on make build-linux
       - name: Install Go
         if: success()
-        uses: actions/setup-go@v1
+        uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.testversion }}
       - name: Integration test
