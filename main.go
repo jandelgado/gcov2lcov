@@ -49,7 +49,7 @@ func findFile(filePath string) (string, error) {
 	if result, ok = pkgCache[dir]; !ok {
 		pkg, err := build.Import(dir, ".", build.FindOnly)
 		if err == nil {
-			result = cacheEntry{filepath.Join(pkg.Dir), nil}
+			result = cacheEntry{pkg.Dir, nil}
 		} else {
 			result = cacheEntry{"", err}
 		}
