@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goversion: [1.12, 1.13, 1.14, 1.15, 1.16, 1.17, 1.18]
+        goversion: [1.15, 1.16, 1.17, 1.18, 1.19, 1.20, 1.21]
     steps:
       - name: Install Go
         if: success()
@@ -48,8 +48,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        buildversion: [1.12, 1.13, 1.14, 1.15, 1.16, 1.17, 1.18]
-        testversion: [1.12, 1.13, 1.14, 1.15, 1.16, 1.17, 1.18]
+        buildversion: [1.15, 1.16, 1.17, 1.18, 1.19, 1.20, 1.21]
+        testversion: [1.15, 1.16, 1.17, 1.18, 1.19, 1.20, 1.21]
     steps:
       - name: Install Go
         if: success()
