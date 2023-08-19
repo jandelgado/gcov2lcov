@@ -50,17 +50,17 @@ jobs:
         buildversion: ["1.15", "1.16", "1.17", "1.18", "1.19", "1.20", "1.21"]
         testversion: ["1.15", "1.16", "1.17", "1.18", "1.19", "1.20", "1.21"]
     steps:
-      - name: Install Go
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install Go to build artifact
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.buildversion }}
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Build binary for inttest
+      - name: Build artifact for inttest
         run: |
           go version
           GO111MODULE=on make build-linux
-      - name: Install Go
+      - name: Install Go for inttest
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.testversion }}
