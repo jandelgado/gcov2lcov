@@ -12,30 +12,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Install Go
-      uses: actions/setup-go@v4
+      uses: actions/setup-go@v5
       with:
-        go-version: 1.21.x
+        go-version: 1.23.x
     - name: golangci-lint
-      uses: golangci/golangci-lint-action@v3
+      uses: golangci/golangci-lint-action@v6
       with:
-          version: v1.52.2
-    - name: Run linters
-      run: |
-        export PATH=$PATH:$(go env GOPATH)/bin
-        ./pre-commit
+          version: latest
 
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goversion: ["1.15", "1.16", "1.17", "1.18", "1.19", "1.20", "1.21"]
+        goversion: ["1.20", "1.21", "1.22", "1.23"]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.goversion }}
       - name: Run tests
@@ -47,21 +43,21 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        buildversion: ["1.15", "1.16", "1.17", "1.18", "1.19", "1.20", "1.21"]
-        testversion: ["1.15", "1.16", "1.17", "1.18", "1.19", "1.20", "1.21"]
+        buildversion: ["1.20", "1.21", "1.22", "1.23"]
+        testversion: ["1.20", "1.21", "1.22", "1.23"]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Go to build artifact
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.buildversion }}
       - name: Build artifact for inttest
         run: |
           go version
-          GO111MODULE=on make build-linux
+          make build-linux
       - name: Install Go for inttest
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.testversion }}
       - name: Integration test
@@ -69,24 +65,3 @@ jobs:
           go version
           make inttest
 
-  build:
-    runs-on: ubuntu-latest
-    needs: [lint, test, inttest]
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Install Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: 1.21.x
-      - name: build
-        run: |
-          go version
-          make build-linux
-          make build-windows
-          make build-darwin
-      - name: upload artifacts
-        uses: actions/upload-artifact@master
-        with:
-          name: bin
-          path: bin/
