@@ -1,5 +1,10 @@
 # changelog for gcov2lcov
 
+## 1.1.0 [2024-10-11]
+
+* use gorealser for builds and provide additional versions
+* dependency upgrades
+
 ## 1.0.6 [2023-08-18]
 
 * performance otimizations (thanks to zzh8829, #16)
