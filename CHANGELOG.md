@@ -1,5 +1,10 @@
 # changelog for gcov2lcov
 
+## 1.1.1 [2024-10-23]
+
+* provide a release package `gcov2lcov-linux-amd64.tar.gz` to be compatible
+  with older `gcov2lcov-action` versions
+
 ## 1.1.0 [2024-10-11]
 
 * use goreleaser for builds and provide additional versions
