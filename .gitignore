@@ -1,5 +1,6 @@
 *~
 *.exe
+dist/
 bin/
 coverage.out
 coverage.lcov
