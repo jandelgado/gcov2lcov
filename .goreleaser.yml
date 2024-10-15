@@ -1,9 +1,12 @@
 version: 2
+
 before:
   hooks:
     - go mod tidy
+
 builds:
-  - env:
+  - id: other
+    env:
       - CGO_ENABLED=0
     dir: .
     goos:
@@ -17,8 +20,8 @@ builds:
       - arm
       - arm64
     goarm:
-      - 6
-      - 7
+      - "6"
+      - "7"
     ignore:
       - goos: darwin
         goarch: arm
@@ -26,14 +29,42 @@ builds:
         goarch: arm64
       - goos: windows
         goarch: arm
+
+# linux/amd64 binary is named according to the pre 1.1.0 version to ensure
+# upwards compatibility of the gcov2lcov-action. see also below in the archives
+# section
+  - id: linux_amd64
+    env:
+      - CGO_ENABLED=0
+    dir: .
+    binary: bin/gcov2lcov-linux-amd64
+    goos:
+      - linux
+    goarch:
+      - amd64
+
+# linux/amd64 binary is named according to the pre 1.1.0 version to ensure
+# upwards compatibility of the gcov2lcov-action
 archives:
-  - files:
+   - id: linux_amd64
+     builds:
+      - linux_amd64
+     name_template: gcov2lcov-linux-amd64
+     files:
       - README.md
       - LICENSE
       - CHANGELOG.md
-    format_overrides:
+   - id: other
+     builds:
+      - other
+     files:
+      - README.md
+      - LICENSE
+      - CHANGELOG.md
+     format_overrides:
       - goos: windows
         format: zip
+
 checksum:
   name_template: 'checksums.txt'
 snapshot:
