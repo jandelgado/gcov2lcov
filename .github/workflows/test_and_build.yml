@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     - name: Install Go
       uses: actions/setup-go@v5
       with:
@@ -29,7 +29,7 @@ jobs:
         goversion: ["1.20", "1.21", "1.22", "1.23"]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install Go
         uses: actions/setup-go@v5
         with:
@@ -47,7 +47,7 @@ jobs:
         testversion: ["1.20", "1.21", "1.22", "1.23"]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Install Go to build artifact
         uses: actions/setup-go@v5
         with:
