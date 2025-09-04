@@ -14,7 +14,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     - name: Install Go
-      uses: actions/setup-go@v5
+      uses: actions/setup-go@v6
       with:
         go-version: 1.23.x
     - name: golangci-lint
@@ -31,7 +31,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.goversion }}
       - name: Run tests
@@ -49,7 +49,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Install Go to build artifact
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.buildversion }}
       - name: Build artifact for inttest
@@ -57,7 +57,7 @@ jobs:
           go version
           make build-linux
       - name: Install Go for inttest
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.testversion }}
       - name: Integration test
